@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # My Cloudformation Code
 
 AWSTemplateFormatVersion: '2010-09-09'
@@ -14,3 +15,6 @@ Resources:
         IgnorePublicAcls: true
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
+=======
+# My Code
+>>>>>>> 7f8c14196f2805824e5bee630cd2879549de8a63
