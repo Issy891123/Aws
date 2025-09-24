@@ -1,4 +1,6 @@
 import json
+# Script de prueba para una función Lambda que se activa
+# por un evento de S3 (subida de archivo).
 
 def mi_manejador(event, context):
     """
