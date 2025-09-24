@@ -1,8 +1,5 @@
-# My Cloudformation Code
-
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Una plantilla para desplegar S3 y Lambda (Paso 1 Base).
-
 Resources:
   RolParaLambda:
     Type: AWS::IAM::Role
@@ -10,41 +7,47 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
   MiFuncionLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: mi-primera-funcion-lambda
       Handler: handler.mi_manejador
       Runtime: python3.12
-      Role: !GetAtt RolParaLambda.Arn
-      Code: ./lambda
-
+      Role:
+        Fn::GetAtt:
+        - RolParaLambda
+        - Arn
+      Code:
+        S3Bucket: tu-bucket-para-codigo-unico
+        S3Key: 50a922a4d16b338fdc480bd39e61b574
   MiBucketDePrueba:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'mi-bucket-de-prueba-unico-${AWS::AccountId}'
+      BucketName:
+        Fn::Sub: mi-bucket-de-prueba-unico-${AWS::AccountId}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt MiFuncionLambda.Arn
-            
   PermisoS3ParaInvocarLambda:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt MiFuncionLambda.Arn
+      FunctionName:
+        Fn::GetAtt:
+        - MiFuncionLambda
+        - Arn
       Action: lambda:InvokeFunction
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt MiBucketDePrueba.Arn
-      SourceAccount: !Ref AWS::AccountId
+      SourceArn:
+        Fn::GetAtt:
+        - MiBucketDePrueba
+        - Arn
+      SourceAccount:
+        Ref: AWS::AccountId

@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Crea una instancia de base de datos MySQL en RDS para Airflow,
+  compatible con la capa gratuita de AWS.
+
+Parameters:
+  DBUser:
+    Type: String
+    Description: El nombre de usuario para la base de datos.
+    MinLength: '4'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Debe empezar con una letra y contener solo caracteres alfanuméricos.
+
+  DBPassword:
+    Type: String
+    Description: La contraseña para el usuario de la base de datos.
+    NoEcho: true
+    MinLength: '8'
+    ConstraintDescription: Debe tener al menos 8 caracteres.
+
+Resources:
+  # Recurso 1: El Grupo de Seguridad (Firewall de la BD)
+  MyRDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permite el acceso al puerto de MySQL (3306)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          CidrIp: 0.0.0.0/0 # ADVERTENCIA: Permite acceso desde cualquier IP.
+
+  # Recurso 2: La Instancia de la Base de Datos RDS
+  MyAirflowDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: airflow_db # El nombre de la base de datos que quieres crear
+      DBInstanceIdentifier: airflow-db-instance
+      Engine: mysql
+      EngineVersion: '8.0' # Puedes ajustar la versión si es necesario
+      DBInstanceClass: db.t3.micro # Instancia elegible para la capa gratuita
+      AllocatedStorage: '20' # 20 GB de almacenamiento, dentro de la capa gratuita
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !GetAtt MyRDSSecurityGroup.GroupId
+      PubliclyAccessible: true # Necesario para conectarte desde tu PC
+
+Outputs:
+  DBEndpointAddress:
+    Description: "La dirección (endpoint) para conectarse a la base de datos RDS"
+    Value: !GetAtt MyAirflowDB.Endpoint.Address
