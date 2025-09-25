@@ -1,4 +1,4 @@
-# My Cloudformation Code
+# My Cloudformation Code for practice
 
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Una plantilla para desplegar S3 y Lambda (Paso 1 Base).

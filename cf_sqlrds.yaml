@@ -20,7 +20,7 @@ Parameters:
     ConstraintDescription: Debe tener al menos 8 caracteres.
 
 Resources:
-  # Recurso 1: El Grupo de Seguridad (Firewall de la BD)
+  # Recurso 1: El Grupo de Seguridad (Firewall de la BD) para permitir el acceso al puerto
   MyRDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
