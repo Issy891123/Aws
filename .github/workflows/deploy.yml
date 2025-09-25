@@ -1,0 +1,49 @@
+# .github/workflows/deploy.yml
+name: Deploy Database Change to RDS
+
+on:
+  push:
+    branches:
+      - main # Se ejecuta cada vez que haces push a la rama 'main'
+
+jobs:
+  deploy-db-change:
+    runs-on: ubuntu-latest
+    
+    # Permisos necesarios para la autenticación OIDC con AWS
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      # 1. Clona el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configura las credenciales de AWS usando el rol OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 3. Configura el entorno de Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 4. Instala las dependencias de Python
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 5. Ejecuta el script de Python
+      - name: Run database script
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: python Jobs/create_new_table.py
