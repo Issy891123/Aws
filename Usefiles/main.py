@@ -3,10 +3,9 @@ import numpy as np
 from faker import Faker
 import random
 
-# --- 1. CONFIGURACIÓN INICIAL ---
+# --- CONFIGURACIÓN INICIAL ---
 NUM_REGISTROS = 2500
-fake = Faker('es_CO')  # Usar localización para datos más realistas (Colombia)
-
+fake = Faker('es_CO')  # Usar localización Colombia
 # Listas de datos controlados para introducir errores
 productos = {
     'PROD-001': ('Laptop Pro', 'Tecnología'),
@@ -18,7 +17,7 @@ productos = {
 }
 ciudades = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena']
 
-# --- 2. GENERACIÓN DE DATOS BASE (LIMPIOS) ---
+# --- GENERACIÓN DE DATOS BASE (LIMPIOS) ---
 print("Generando datos base...")
 data = []
 for i in range(NUM_REGISTROS):
@@ -44,15 +43,14 @@ for i in range(NUM_REGISTROS):
 
 df = pd.DataFrame(data)
 
-# --- 3. INTRODUCCIÓN DE ERRORES ---
 print("Introduciendo errores en el dataset...")
 
-# Problema 1: Duplicados (2% de los datos)
+# Problema Duplicados
 num_duplicados = int(NUM_REGISTROS * 0.02)
 filas_duplicadas = df.sample(n=num_duplicados)
 df = pd.concat([df, filas_duplicadas], ignore_index=True)
 
-# Problema 2: Diferencias Ortográficas (10% de los datos)
+# Problema Diferencias Ortográficas
 for index in df.sample(frac=0.10).index:
     # Alternar entre errores de ciudad y categoría
     if random.random() > 0.5:
@@ -64,7 +62,7 @@ for index in df.sample(frac=0.10).index:
         categoria_original = df.loc[index, 'Categoria']
         df.loc[index, 'Categoria'] = categoria_original.lower()
 
-# Problema 3: Diferencias de Formato (Fechas y Precios) (15% de los datos)
+# Problema Diferencias de Formato (Fechas y Precios)
 for index in df.sample(frac=0.15).index:
     if random.random() > 0.5:  # Formato de fecha
         fecha_original = pd.to_datetime(df.loc[index, 'Fecha_Pedido'])
@@ -73,29 +71,29 @@ for index in df.sample(frac=0.15).index:
     else:  # Formato de precio (coma decimal)
         df.loc[index, 'Precio_Unitario'] = str(df.loc[index, 'Precio_Unitario']).replace('.', ',')
 
-# Problema 4: Números almacenados como texto (10% de los datos)
+# Problema Números almacenados como texto
 for index in df.sample(frac=0.10).index:
     if random.random() > 0.5:  # Cantidad con espacios
         df.loc[index, 'Cantidad'] = f" {df.loc[index, 'Cantidad']} "
     else:  # Precio con símbolo de moneda
         df.loc[index, 'Precio_Unitario'] = f"$ {df.loc[index, 'Precio_Unitario']}"
 
-# Problema 5: Espacios en las celdas (15% de los datos)
+# Problema Espacios en las celdas 
 for index in df.sample(frac=0.15).index:
     columna_a_modificar = random.choice(['Nombre_Cliente', 'Nombre_Producto'])
     valor_original = df.loc[index, columna_a_modificar]
     df.loc[index, columna_a_modificar] = f"  {valor_original} "
 
-# Problema 6: Diferencias de codificación (simulado) (5% de los datos)
+# Problema ===> Diferencias de codificación 
 for index in df.sample(frac=0.05).index:
     nombre_original = df.loc[index, 'Nombre_Cliente']
     try:
         # Simula un texto UTF-8 mal interpretado como Latin-1
         df.loc[index, 'Nombre_Cliente'] = nombre_original.encode('utf-8').decode('latin-1')
     except:
-        pass  # Evitar errores si un nombre no tiene caracteres especiales
+        pass  
 
-# Problema 7: Inconsistencias en claves (ID_Cliente) (10% de los datos)
+# Problema ==> Inconsistencias en claves (ID_Cliente) (10% de los datos)
 for index in df.sample(frac=0.10).index:
     opcion = random.random()
     if opcion < 0.4:  # Prefijo
@@ -105,7 +103,6 @@ for index in df.sample(frac=0.10).index:
     else:  # Nulo
         df.loc[index, 'ID_Cliente'] = np.nan
 
-# --- 4. GUARDAR ARCHIVO ---
 # Mezclar el dataframe para que los errores queden distribuidos aleatoriamente
 df = df.sample(frac=1).reset_index(drop=True)
 
